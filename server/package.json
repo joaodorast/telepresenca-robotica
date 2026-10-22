@@ -1,0 +1,17 @@
+{
+  "name": "telepresenca-signaling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Servidor de sinalização WebSocket, autenticação de sessões e credenciais ICE/TURN da Telepresença Robótica.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "dev": "node --watch --env-file-if-exists=.env src/index.js",
+    "test": "node --test test/signaling.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
