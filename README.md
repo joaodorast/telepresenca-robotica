@@ -95,9 +95,12 @@ Desperta → abre os olhos e olha para a câmera → inclina a cabeça → sorri
 | **Operador** | Com você | Vê a pessoa pela câmera do robô; tudo o que você fala no microfone sai **com voz robótica somente no notebook do robô** |
 
 1. No notebook do **operador**, dê dois cliques em `iniciar-rede-local.bat` (ou rode `npm run lan`). Na primeira vez ele instala as dependências.
-2. O terminal mostra o endereço, por exemplo `https://192.168.0.6:5173/operator`. Abra-o no Chrome/Edge **deste** notebook. O certificado é autoassinado: clique em **Avançado → Continuar para o site**.
-3. Entre com a senha (`OPERATOR_PASSWORD` do `server\.env`; sem ela, `operador`) → **Criar sessão** → **Iniciar sessão** e permita o microfone.
-4. No notebook do **robô** (mesmo Wi-Fi/cabo), abra o link ou leia o QR code da aba *Link do robô*, aceite o certificado do mesmo jeito e toque em **Toque para iniciar** (permita câmera e microfone).
+2. A central abre sozinha numa janela própria, já com login, sessão criada e microfone ligado. O link do robô é copiado para a área de transferência e também aparece no terminal.
+3. No notebook do **robô** (mesmo Wi-Fi/cabo), abra esse link no Chrome. O certificado é autoassinado: clique em **Avançado → Continuar para o site**. Depois toque em **Toque para iniciar** e permita câmera e microfone.
+
+O microfone do operador é escolhido automaticamente: se o padrão do Windows não capta som (por exemplo, a entrada "Microfone Externo" de um fone sem microfone), a central troca para o microfone que capta. A escolha manual continua na aba *Áudio e dispositivos*.
+
+A janela automática usa um perfil próprio do navegador (pasta `.navegador-operador`), que aceita o certificado local e libera microfone e áudio sem clique. O navegador do dia a dia não é alterado. Se nenhum Chrome/Edge for encontrado, abra o endereço mostrado no terminal e entre com a senha (`OPERATOR_PASSWORD` do `server\.env`; sem ela, `operador`).
 
 Observações:
 * Se o Windows perguntar sobre o Firewall ao iniciar, permita em **Redes privadas**. Se o robô não abrir a página, a rede do Windows pode estar marcada como "Pública": mude para "Privada".
