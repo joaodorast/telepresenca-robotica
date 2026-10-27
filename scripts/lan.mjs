@@ -51,6 +51,7 @@ process.on('SIGTERM', () => shutdown(0));
 // Variáveis do processo têm precedência sobre server/.env (--env-file não as sobrescreve).
 run('servidor de sinalização', ['--env-file-if-exists=.env', 'src/index.js'], join(root, 'server'), {
   NODE_ENV: 'development',
+  LAN_MODE: '1',
   PORT: String(SIGNALING_PORT),
   ALLOWED_ORIGINS: allowedOrigins.join(','),
 });
