@@ -13,6 +13,9 @@ import { DEFAULT_CONFIG, type ExpressionId, type RobotStatus, type ServerMessage
 
 export type MicState = 'off' | 'on' | 'muted' | 'error';
 
+const MIC_MUTED_BY_SYSTEM =
+  'Nenhum som chega do microfone: ele está no mudo no sistema. No Windows, abra Configurações → Sistema → Som → Entrada e tire do mudo (ou use a tecla de microfone do notebook).';
+
 export interface OperatorSnapshot {
   phase: 'idle' | 'starting' | 'live' | 'ended';
   signaling: SignalingStatus;
@@ -200,9 +203,16 @@ export class OperatorSession extends Store<OperatorSnapshot> {
         noiseSuppression: this.snap.voice.noiseSuppression,
         autoGainControl: false,
       });
-      this.micStream.getAudioTracks()[0].addEventListener('ended', () =>
-        this.patch({ mic: 'error', micError: 'O microfone foi desconectado.' }),
-      );
+      const track = this.micStream.getAudioTracks()[0];
+      track.addEventListener('ended', () => this.patch({ mic: 'error', micError: 'O microfone foi desconectado.' }));
+      // "muted" = o sistema não entrega som (microfone no mudo no Windows ou tecla de mudo do notebook).
+      const muteWarning = () => {
+        if (this.micStream?.getAudioTracks()[0] !== track || this.snap.mic === 'error') return;
+        this.patch({ micError: track.muted ? MIC_MUTED_BY_SYSTEM : null });
+      };
+      track.addEventListener('mute', muteWarning);
+      track.addEventListener('unmute', muteWarning);
+      window.setTimeout(muteWarning, 2500);
       this.chain!.setInput(this.micStream);
       const muted = this.snap.mic === 'muted';
       this.chain!.outputTrack.enabled = !muted;
