@@ -31,7 +31,7 @@ export const VOICE_PRESETS: Record<string, { label: string; hint: string; settin
   classico: {
     label: 'Clássico',
     hint: 'Robô de ficção científica',
-    settings: { intensity: 1, pitch: 0.94, formant: 1, ringFreq: 58, ringMix: 0.5, metallic: 0.5, crush: 0.18 },
+    settings: { intensity: 1, pitch: 0.88, formant: 0.95, ringFreq: 52, ringMix: 0.8, metallic: 0.65, crush: 0.25 },
   },
   grave: {
     label: 'Grave',
@@ -47,7 +47,7 @@ export const VOICE_PRESETS: Record<string, { label: string; hint: string; settin
 
 export const DEFAULT_VOICE: VoiceSettings = {
   enabled: true,
-  ...VOICE_PRESETS.assistente.settings,
+  ...VOICE_PRESETS.classico.settings,
   gateDb: -52,
   inputGain: 1,
   outputGain: 1,
