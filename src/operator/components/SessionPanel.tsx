@@ -4,9 +4,10 @@ import { Check, Copy, ExternalLink } from 'lucide-react';
 import type { OperatorSnapshot } from '../OperatorSession';
 import type { SessionCredentials } from '../../lib/api';
 import { Button, Notice } from '../../ui/controls';
+import { publicOrigin } from '../../config/env';
 
 export function robotLink(creds: SessionCredentials) {
-  return `${window.location.origin}/robot?t=${encodeURIComponent(creds.robotToken)}`;
+  return `${publicOrigin()}/robot?t=${encodeURIComponent(creds.robotToken)}`;
 }
 
 export function SessionPanel({ s, creds }: { s: OperatorSnapshot; creds: SessionCredentials }) {
