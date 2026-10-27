@@ -87,6 +87,26 @@ Desperta → abre os olhos e olha para a câmera → inclina a cabeça → sorri
 
 ---
 
+## Modo rede local — dois notebooks na mesma rede (sem Vercel/Render)
+
+| Notebook | Fica onde | O que faz |
+|---|---|---|
+| **Robô** | Diante do público | Tela mostra só o personagem para todo mundo ver; a webcam filma quem olha para o robô; a caixa de som toca a voz robótica |
+| **Operador** | Com você | Vê a pessoa pela câmera do robô; tudo o que você fala no microfone sai **com voz robótica somente no notebook do robô** |
+
+1. No notebook do **operador**, dê dois cliques em `iniciar-rede-local.bat` (ou rode `npm run lan`). Na primeira vez ele instala as dependências.
+2. O terminal mostra o endereço, por exemplo `https://192.168.0.6:5173/operator`. Abra-o no Chrome/Edge **deste** notebook. O certificado é autoassinado: clique em **Avançado → Continuar para o site**.
+3. Entre com a senha (`OPERATOR_PASSWORD` do `server\.env`; sem ela, `operador`) → **Criar sessão** → **Iniciar sessão** e permita o microfone.
+4. No notebook do **robô** (mesmo Wi-Fi/cabo), abra o link ou leia o QR code da aba *Link do robô*, aceite o certificado do mesmo jeito e toque em **Toque para iniciar** (permita câmera e microfone).
+
+Observações:
+* Se o Windows perguntar sobre o Firewall ao iniciar, permita em **Redes privadas**. Se o robô não abrir a página, a rede do Windows pode estar marcada como "Pública": mude para "Privada".
+* Não precisa de internet: o servidor de sinalização roda no notebook do operador e o Vite repassa `/api` e `/ws` para ele, então só a porta 5173 precisa estar acessível. A mídia vai direto de um notebook para o outro.
+* Redes de visitantes ou corporativas que isolam os aparelhos entre si ("isolamento de clientes") bloqueiam a conexão. Nesse caso, use o roteador do celular ou publique online (seção *Publicação*).
+* Use fone de ouvido no operador para o som ambiente do robô não voltar para o microfone.
+
+---
+
 ## Executar localmente (Windows — Prompt de Comando)
 
 Requisitos: **Node.js 22 ou superior** e Chrome/Edge atualizados.
