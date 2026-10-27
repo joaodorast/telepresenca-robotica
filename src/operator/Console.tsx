@@ -24,6 +24,8 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 interface ConsoleProps {
   creds: SessionCredentials;
+  /** Inicia a sessão sem clique (janela aberta por `npm run lan`, que libera áudio sem gesto). */
+  autoStart?: boolean;
   onClose: () => void;
   onLogout: () => void;
 }
@@ -33,10 +35,14 @@ export function Console(props: ConsoleProps) {
   return session ? <ConsoleView session={session} {...props} /> : null;
 }
 
-function ConsoleView({ session, creds, onClose, onLogout }: ConsoleProps & { session: OperatorSession }) {
+function ConsoleView({ session, creds, autoStart, onClose, onLogout }: ConsoleProps & { session: OperatorSession }) {
   const s = useStore(session);
   const [tab, setTab] = useState<Tab>('session');
   const [confirmEnd, setConfirmEnd] = useState(false);
+
+  useEffect(() => {
+    if (autoStart) void session.start();
+  }, [session, autoStart]);
 
   // Quando o robô conecta, a aba mais útil passa a ser a da voz.
   useEffect(() => {
