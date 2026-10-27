@@ -152,6 +152,8 @@ function openOperator(admin, creds) {
       '--no-first-run',
       '--no-default-browser-check',
       '--start-maximized',
+      // Diagnóstico: OPERATOR_DEBUG_PORT=9333 npm run lan permite inspecionar a central pelo DevTools.
+      ...(process.env.OPERATOR_DEBUG_PORT ? [`--remote-debugging-port=${process.env.OPERATOR_DEBUG_PORT}`] : []),
     ],
     { detached: true, stdio: 'ignore' },
   ).unref();
