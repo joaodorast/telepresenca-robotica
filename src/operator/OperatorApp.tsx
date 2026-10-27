@@ -16,6 +16,25 @@ function read<T extends { expiresAt: number }>(key: string): T | null {
   }
 }
 
+/**
+ * `npm run lan` abre a central já com login e sessão criados: #auto=<base64url de {admin, creds}>.
+ * Os dados vão para o sessionStorage e o fragmento é apagado da barra de endereço.
+ */
+const autoLaunch = (() => {
+  const m = window.location.hash.match(/^#auto=([\w-]+)$/);
+  if (!m) return false;
+  try {
+    const { admin, creds } = JSON.parse(atob(m[1].replace(/-/g, '+').replace(/_/g, '/')));
+    sessionStorage.setItem(K_ADMIN, JSON.stringify(admin));
+    sessionStorage.setItem(K_SESSION, JSON.stringify(creds));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    history.replaceState(null, '', window.location.pathname);
+  }
+})();
+
 /** Central do operador: login → criação da sessão → console de teleoperação. */
 export default function OperatorApp() {
   const [admin, setAdmin] = useState(() => read<{ token: string; expiresAt: number }>(K_ADMIN));
@@ -54,6 +73,7 @@ export default function OperatorApp() {
     <Console
       key={creds.sessionId}
       creds={creds}
+      autoStart={autoLaunch}
       onClose={() => {
         sessionStorage.removeItem(K_SESSION);
         setCreds(null);
