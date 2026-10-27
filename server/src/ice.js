@@ -45,6 +45,7 @@ export async function getIceServers(env, sessionId) {
   }
   servers.push(...coturn(env, sessionId));
   const hasTurn = servers.some((s) => [].concat(s.urls).some((u) => String(u).startsWith('turn')));
-  if (!hasTurn) warnings.push('Nenhum servidor TURN configurado: conexões atrás de NAT restritivo podem falhar.');
+  // Na rede local (npm run lan) a mídia vai direto entre os notebooks; TURN não faz falta.
+  if (!hasTurn && !env.LAN_MODE) warnings.push('Nenhum servidor TURN configurado: conexões atrás de NAT restritivo podem falhar.');
   return { iceServers: servers, hasTurn, warnings };
 }
