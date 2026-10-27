@@ -5,7 +5,7 @@ import { LipSyncAnalyzer } from '../lib/audio/LipSyncAnalyzer';
 import { RobotVoiceChain } from '../lib/audio/RobotVoiceChain';
 import { createAnalyser, LevelMeter } from '../lib/audio/levels';
 import { DEFAULT_VOICE, VOICE_PRESETS, type VoiceSettings } from '../lib/audio/voicePresets';
-import { describeMediaError, requestMicrophone, stopStream } from '../lib/media/devices';
+import { describeMediaError, probeMicrophones, requestMicrophone, stopStream } from '../lib/media/devices';
 import { SignalingClient, type SignalingStatus } from '../lib/signaling/SignalingClient';
 import { Store } from '../lib/store';
 import { newPeerId, TelepresencePeer, type PeerStats } from '../lib/webrtc/TelepresencePeer';
@@ -140,6 +140,7 @@ export class OperatorSession extends Store<OperatorSnapshot> {
       return;
     }
     await this.acquireMic();
+    void this.autoPickMic();
     try {
       const ice = await api.ice(this.creds.operatorToken);
       this.iceServers = ice.iceServers;
@@ -209,6 +210,27 @@ export class OperatorSession extends Store<OperatorSnapshot> {
     } catch (err) {
       this.patch({ mic: 'error', micError: describeMediaError(err, 'microfone').message });
     }
+  }
+
+  /**
+   * Sem microfone escolhido pelo operador, confere se o padrão do sistema capta som; se estiver mudo
+   * (ex.: "Microfone Externo" de um fone sem microfone), troca para o microfone que realmente capta.
+   */
+  private async autoPickMic() {
+    const chain = this.chain;
+    if (!chain || this.snap.micDeviceId || this.snap.mic === 'error') return;
+    let live = -Infinity;
+    for (let i = 0; i < 16; i++) {
+      live = Math.max(live, chain.inputMeter.db);
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    if (live > -70) return; // o microfone atual capta som
+    const probes = await probeMicrophones(chain.ctx);
+    if (this.chain !== chain || this.snap.micDeviceId) return; // sessão encerrada ou escolha manual no meio
+    const best = probes.reduce<(typeof probes)[number] | null>((a, b) => (!a || b.db > a.db ? b : a), null);
+    if (!best || best.db < live + 10) return;
+    this.patch({ micDeviceId: best.deviceId });
+    await this.acquireMic();
   }
 
   retryMic() {
