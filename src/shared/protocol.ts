@@ -44,7 +44,7 @@ export const DEFAULT_CONFIG: SessionConfig = {
   greetingAudio: null,
   ttsPitch: 0.8,
   ttsRate: 1,
-  halfDuplex: true,
+  halfDuplex: false,
   robotVolume: 0.9,
   ambientAudio: true,
 };
