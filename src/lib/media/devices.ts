@@ -1,5 +1,7 @@
 // Captura de câmera e microfone com mensagens de erro claras em português.
 
+import { createAnalyser, LevelMeter } from '../audio/levels';
+
 export type MediaFailureKind = 'denied' | 'not-found' | 'busy' | 'insecure' | 'unsupported' | 'unknown';
 
 export interface MediaFailure {
@@ -96,3 +98,45 @@ export const supportsOutputSelection = () => 'setSinkId' in HTMLMediaElement.pro
 export function stopStream(stream: MediaStream | null | undefined) {
   stream?.getTracks().forEach((t) => t.stop());
 }
+
+export interface MicProbe {
+  deviceId: string;
+  label: string;
+  /** Maior nível RMS captado durante a medição (dBFS). Entradas mudas ficam perto de −180. */
+  db: number;
+}
+
+/**
+ * Abre cada microfone por alguns instantes, sem processamento, e mede o que ele capta.
+ * Serve para descartar entradas que existem mas não recebem som — por exemplo, a entrada
+ * "Microfone Externo" que o Windows ativa ao plugar um fone de ouvido sem microfone.
+ */
+export async function probeMicrophones(ctx: AudioContext, ms = 900): Promise<MicProbe[]> {
+  const inputs = (await navigator.mediaDevices.enumerateDevices()).filter(
+    (d) => d.kind === 'audioinput' && d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications',
+  );
+  const out: MicProbe[] = [];
+  for (const d of inputs) {
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: { exact: d.deviceId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      });
+      const source = ctx.createMediaStreamSource(stream);
+      const meter = new LevelMeter(createAnalyser(ctx, 2048));
+      source.connect(meter.analyser);
+      await sleep(150); // descarta o início da captura
+      let db = -Infinity;
+      for (const end = performance.now() + ms; performance.now() < end; await sleep(50)) db = Math.max(db, meter.db);
+      source.disconnect();
+      out.push({ deviceId: d.deviceId, label: d.label, db });
+    } catch {
+      // microfone indisponível ou em uso exclusivo: fica fora da escolha
+    } finally {
+      stopStream(stream);
+    }
+  }
+  return out;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
